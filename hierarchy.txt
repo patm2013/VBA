@@ -1,0 +1,429 @@
+Sub makeHier()
+    'instantiate the utility class
+    Dim u As New util
+
+    'create root dictionary
+    Dim rootDic As Dictionary
+    Set rootDic = New Dictionary
+    
+    'set root dictionary name to root
+    rootDic("name") = "root"
+    'set root dictionary children = new collection
+    Set rootDic("children") = New Collection
+    
+    'set pivot table
+    Dim pv As PivotTable
+    Set pv = Range("A3").PivotTable
+    'declare data arrays
+    Dim arrLbls() As Variant, arrLblHeaders() As Variant, arrData() As Variant, arrDataHeaders As Variant
+    
+    arrLbls = u.pvLables(pv)
+    arrLblHeaders = u.pvLableHeaders(pv)
+    arrData = u.pvData(pv)
+    arrDataHeaders = Range("G3")
+    
+    'create Current dictionary variable
+    Dim curDic As Dictionary
+    'create strName variable
+    Dim strName As String
+ 
+    'create childDic dictionary variable
+    Dim childDic As Dictionary
+    
+    'create Row & Column counts
+    Dim intRowMax As Integer, intColMax As Integer
+    intRowMax = UBound(arrLbls, 1)
+    intColMax = UBound(arrLbls, 2)
+    
+
+    'for each row in array
+    For intRow = 1 To intRowMax
+    
+        'set current dictionary to root dictionary
+        Set curDic = rootDic
+    
+        'for each column in row
+        For intcol = 1 To intColMax
+        
+            'set strName = current cell
+            strName = arrLbls(intRow, intcol)
+            
+            'if strName is not in current dictionaries children collection
+            If Not inChildren(curDic, strName) Then
+                'make child dictionary and add to current dictionaries children collection
+                Call makeChildDic(curDic, strName)
+                Set curDic = indexChildren(curDic, strName)
+                If intcol = intColMax Then
+                    curDic.Add "value", arrData(intRow, 1)
+                End If
+                'Debug.Print "NEW DICTIONARY - " & curDic("name")
+            Else
+                Set curDic = indexChildren(curDic, strName)
+                'Debug.Print "CHANGED DICTIONARY TO - " & curDic("name")
+            End If
+            
+        Next
+        
+    Next
+
+
+    Dim intC  As Integer
+    intC = 0
+    Call pDics(rootDic, intC)
+
+
+End Sub
+
+Sub pDics(rootDic As Dictionary, intCount As Integer)
+
+    Dim curDic As Dictionary
+    Set curDic = rootDic
+    Dim strName As String
+    
+    
+    Dim colChildren As Collection
+    
+    Set colChildren = curDic("children")
+    
+    Dim childDic As Dictionary
+    
+    For x = 1 To colChildren.Count
+        
+        Set childDic = colChildren(x)
+        strName = childDic("name")
+    
+        If childDic("children").Count = 0 Then
+            Debug.Print Space(intCount * 4) & strName & ": " & childDic("value")
+        Else
+            Debug.Print Space(intCount * 4) & strName
+            intCount = intCount + 1
+            Call pDics(childDic, intCount)
+            intCount = intCount - 1
+        End If
+    Next
+    
+End Sub
+
+Sub makeChildDic(parentDic As Dictionary, strName As String)
+    Dim childDic As Dictionary
+    Set childDic = New Dictionary
+    childDic("name") = strName
+    Set childDic("children") = New Collection
+    parentDic("children").Add childDic
+End Sub
+
+Function inChildren(rootDic As Dictionary, strName As String) As Boolean
+
+    Dim childDic As Dictionary
+    
+    inChildren = False
+    'if rootDic's children collection is not empty
+   ' If rootDic("children").Count <> 0 Then
+    'for each child dictionary in rootDic("children") collection
+   '     For Each childDic In rootDic("children")
+    '        'if child dictionaries name = str name
+     '       If childDic("name") = strName Then
+   '             'set inChildren = True
+    '            inChildren = True
+     '           Exit For
+   '         End If
+    '
+     '   Next
+   ' End If
+    
+    If rootDic("children").Count <> 0 Then
+    'for each child dictionary in rootDic("children") collection
+        x = rootDic("children").Count
+        Do Until x = 0
+            Set childDic = rootDic("children").Item(x)
+            'if child dictionaries name = str name
+            If childDic("name") = strName Then
+                'set inChildren = True
+                inChildren = True
+                x = 1
+            End If
+            x = x - 1
+        Loop
+    End If
+    
+
+End Function
+Function indexChildren(rootDic As Dictionary, strName As String) As Dictionary
+    Dim childCol As Collection
+    Dim childDic As Dictionary
+    Dim intCount As Integer
+    intCount = 1
+    Set childCol = rootDic("children")
+    For Each childDic In childCol
+        If childDic("name") = strName Then
+            Set indexChildren = childDic
+        End If
+    Next
+    
+End Function
+
+
+Sub makeHier()
+    'instantiate the utility class
+    Dim u As New util
+
+    'create root dictionary
+    Dim rootDic As Dictionary
+    Set rootDic = New Dictionary
+    
+    'set root dictionary name to root
+    rootDic("name") = "root"
+    'set root dictionary children = new collection
+    Set rootDic("children") = New Collection
+    
+    'set pivot table
+    Dim pv As PivotTable
+    Set pv = Range("A3").PivotTable
+    'declare data arrays
+    Dim arrLbls() As Variant, arrLblHeaders() As Variant, arrData() As Variant, arrDataHeaders() As Variant
+    
+    arrLbls = u.pvLables(pv)
+    arrLblHeaders = u.pvLableHeaders(pv)
+    arrData = u.pvData(pv)
+    arrDataHeaders = u.pvDataHeaders(pv)
+    
+    'create Current dictionary variable
+    Dim curDic As Dictionary
+    'create strName variable
+    Dim strName As String
+ 
+    'create childDic dictionary variable
+    Dim childDic As Dictionary
+    
+    'create Row & Column counts
+    Dim intRowMax As Integer, intColMax As Integer
+    intRowMax = UBound(arrLbls, 1)
+    intColMax = UBound(arrLbls, 2)
+     Dim dVals As Dictionary
+ 
+    'for each row in array
+    For intRow = 1 To intRowMax
+    
+        'set current dictionary to root dictionary
+        Set curDic = rootDic
+    
+        'for each column in row
+        For intcol = 1 To intColMax
+        
+            'set strName = current cell
+            strName = arrLbls(intRow, intcol)
+            
+            'if strName is not in current dictionaries children collection
+            If Not inChildren(curDic, strName) Then
+                'make child dictionary and add to current dictionaries children collection
+                Call makeChildDic(curDic, strName)
+                Set curDic = indexChildren(curDic, strName)
+                If intcol = intColMax Then
+                    
+                    Set dVals = New Dictionary
+                    
+                    For x = 1 To UBound(arrData, 2)
+                    
+                        dVals.Add arrDataHeaders(1, x), arrData(intRow, x)
+                    
+                    Next
+                    curDic.Add "values", dVals
+                End If
+                Debug.Print "NEW DICTIONARY - " & curDic("name")
+            Else
+                Set curDic = indexChildren(curDic, strName)
+                Debug.Print "CHANGED DICTIONARY TO - " & curDic("name")
+            End If
+            
+        Next
+        
+    Next
+
+
+    Dim intC  As Integer
+    intC = 0
+    Call pDics(rootDic, intC)
+
+
+End Sub
+
+Sub pDics(rootDic As Dictionary, intCount As Integer)
+
+    Dim curDic As Dictionary
+    Set curDic = rootDic
+    Dim strName As String
+    Dim u As New util
+    
+    Dim colChildren As Collection
+    
+    Set colChildren = curDic("children")
+    
+    Dim childDic As Dictionary
+    
+    For x = 1 To colChildren.Count
+        
+        Set childDic = colChildren(x)
+        strName = childDic("name")
+    
+        If childDic("children").Count = 0 Then
+            Debug.Print Space(intCount * 4) & strName & ": "
+            For k = 0 To childDic("values").Count - 1
+                Debug.Print Space((intCount + 1) * 4) & u.dicStrKeyVal(childDic("values"), CInt(k), ": ")
+            Next
+        Else
+            Debug.Print Space(intCount * 4) & strName
+            intCount = intCount + 1
+            Call pDics(childDic, intCount)
+            intCount = intCount - 1
+        End If
+    Next
+    
+End Sub
+
+Sub makeChildDic(parentDic As Dictionary, strName As String)
+    Dim childDic As Dictionary
+    Set childDic = New Dictionary
+    childDic("name") = strName
+    Set childDic("children") = New Collection
+    parentDic("children").Add childDic
+End Sub
+
+Function inChildren(rootDic As Dictionary, strName As String) As Boolean
+
+    Dim childDic As Dictionary
+    
+    inChildren = False
+    'if rootDic's children collection is not empty
+   ' If rootDic("children").Count <> 0 Then
+    'for each child dictionary in rootDic("children") collection
+   '     For Each childDic In rootDic("children")
+    '        'if child dictionaries name = str name
+     '       If childDic("name") = strName Then
+   '             'set inChildren = True
+    '            inChildren = True
+     '           Exit For
+   '         End If
+    '
+     '   Next
+   ' End If
+    
+    If rootDic("children").Count <> 0 Then
+    'for each child dictionary in rootDic("children") collection
+        x = rootDic("children").Count
+        Do Until x = 0
+            Set childDic = rootDic("children").Item(x)
+            'if child dictionaries name = str name
+            If childDic("name") = strName Then
+                'set inChildren = True
+                inChildren = True
+                x = 1
+            End If
+            x = x - 1
+        Loop
+    End If
+    
+
+End Function
+Function indexChildren(rootDic As Dictionary, strName As String) As Dictionary
+    Dim childCol As Collection
+    Dim childDic As Dictionary
+    Dim intCount As Integer
+    intCount = 1
+    Set childCol = rootDic("children")
+    For Each childDic In childCol
+        If childDic("name") = strName Then
+            Set indexChildren = childDic
+        End If
+    Next
+    
+End Function
+
+Sub ptTester()
+
+    Dim pv As PivotTable
+    Set pv = Range("A3").PivotTable
+    pv.TableRange1.Select
+    pv.TableRange2.Select
+
+End Sub
+
+
+
+
+
+Public Function mdHeader(intHeaderLevel As Integer, strText As String) As String
+
+    mdHeader = String(intHeaderLevel, "#") & strText
+
+End Function
+
+
+
+
+
+
+
+
+Public Function ht(strTag As String, strText As String, Optional strClass As String = "", Optional strID As String = "") As String
+
+    Dim strReturn As String
+    
+    strReturn = "<" & strTag
+    
+    If strClass <> "" Then
+    
+    End If
+    
+    if
+
+
+End Function
+
+
+
+
+
+
+Public Function pvLables(pvt As PivotTable) As Range
+
+    Set pvLables = pvt.RowRange.Offset(1, 0).Resize(pvt.RowRange.Rows.Count - 1)
+
+End Function
+
+
+Public Function pvLableHeaders(pvt As PivotTable) As Range
+
+    Set pvLableHeaders = pvt.RowRange.Resize(1)
+
+End Function
+
+Public Function pvData(pvt As PivotTable) As Range
+
+    Set pvData = pvt.DataBodyRange
+
+End Function
+
+Public Function pvDataHeaders(pvt As PivotTable) As Range
+
+    Set pvDataHeaders = pvt.DataBodyRange.Offset(-1, 0).Resize(1)
+
+End Function
+
+
+Public Function dicStrKeyVal(dic As Dictionary, intIndex As Integer, strDivisor As String) As String
+
+    dicStrKeyVal = dic.Keys(intIndex) & strDivisor & dic(dic.Keys(intIndex))
+
+End Function
+
+Public Function dicFromArr(arrHeaders As Variant, arrValues As Variant) As Collection
+
+    Dim intCount As Integer
+    Dim vals As Collection
+    intCount = UBound(arrHeaders, 2)
+    
+    For x = 1 To intCount
+        vals.Add
+    
+
+End Function
